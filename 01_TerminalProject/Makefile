@@ -1,5 +1,5 @@
 Show: Show.c
-	cc $< -o $@ -lncursesw
+	cc -g $< -o $@ -lncursesw
 
 clean:
 	rm -rf *.o *~ Show a.out

@@ -5,14 +5,39 @@
 
 #define DX 3
 
+void draw_screen(WINDOW *win, char **contents, size_t from_line, size_t to_line, size_t from_col)
+{
+    werase(win);
+    wmove(win, 1, 0);
+    for (int32_t i = from_line; i < to_line; ++i)
+    {
+        if (from_col < strlen(contents[i]))
+        {
+            wprintw(win, " %3lu %.*s", i + 1, COLS - 2 * DX - 6, &contents[i][from_col]);
+            if (strlen(contents[i]) - from_col > COLS - 2 * DX - 6)
+            {
+                waddch(win, '\n');
+            }
+        }
+        else
+        {
+            wprintw(win, " %3lu\n", i + 1);
+        }
+    }
+    box(win, 0, 0);
+    wrefresh(win);
+}
+
 int main(int argc, char **argv)
 {
+    // Init
     WINDOW *win;
     initscr();
     noecho();
     cbreak();
     refresh();
 
+    // Open file
     if (argc < 2)
     {
         printf("Provide filename\n");
@@ -25,71 +50,152 @@ int main(int argc, char **argv)
         printf("Couldn't open file\n");
         return 1;
     }
+
+    // Get filesize and number of lines
     fseek(file, 0L, SEEK_END);
     size_t size = ftell(file);
     fseek(file, 0L, SEEK_SET);
-    char *contents = malloc(size * sizeof(char));
-    int n;
-    if ((n = fread(contents, sizeof(char), size, file)) != size)
+    char c;
+    int32_t num_lines = 0;
+    while ((c = fgetc(file)) != EOF)
     {
-        printf("Couldn't read from file, read %d symbols\n", n);
-        return 1;
+        if (c == '\n')
+        {
+            num_lines++;
+        }
     }
+
+    // Read lines to contents
+    fseek(file, 0L, SEEK_SET);
+    char **contents = calloc(num_lines, sizeof(char *));
+    for (int32_t i = 0; i < num_lines; ++i)
+    {
+        size_t n;
+        if ((n = getline(&contents[i], &n, file)) == -1)
+        {
+            printf("Couldn't read from file, read %lu symbols on %d line\n", n, i);
+            return 1;
+        }
+    }
+
+    // Print file info
     printw("File: %s; size: %d\n", filename, size);
     refresh();
 
+    // Create window
     win = newwin(LINES - 2 * DX, COLS - 2 * DX, DX, DX);
     keypad(win, TRUE);
     scrollok(win, TRUE);
     box(win, 0, 0);
     wrefresh(win);
 
-    char c;
-    size_t begin = 0, end = 0, line_num = 1;
-    wmove(win, 1, 1);
-    while ((c = wgetch(win)) != 27)
+    // Eval loop
+    int x;
+    int32_t line_num = -1, col_num = 0;
+    while ((x = wgetch(win)) != 27)
     {
-        if (c == ' ')
+        switch (x)
         {
-            if (contents[end] == 0)
+        case ' ':
+        case KEY_DOWN:
+        {
+            if (line_num < num_lines - 1)
             {
-                continue;
+                line_num++;
             }
-            while (contents[end] != '\n' && contents[end] != 0)
+            draw_screen(win, contents, line_num,
+                        line_num + LINES - 2 * DX - 2 < num_lines
+                            ? line_num + LINES - 2 * DX - 2
+                            : num_lines,
+                        col_num);
+            break;
+        }
+        case KEY_UP:
+        {
+            if (line_num > 0)
             {
-                ++end;
+                line_num--;
             }
-
-            bool first_line = true;
-            while (end - begin + 1 > COLS - 2 * DX - 5)
+            draw_screen(win, contents, line_num,
+                        line_num + LINES - 2 * DX - 2 < num_lines
+                            ? line_num + LINES - 2 * DX - 2
+                            : num_lines,
+                        col_num);
+            break;
+        }
+        case KEY_RIGHT:
+        {
+            col_num++;
+            draw_screen(win, contents, line_num,
+                        line_num + LINES - 2 * DX - 2 < num_lines
+                            ? line_num + LINES - 2 * DX - 2
+                            : num_lines,
+                        col_num);
+            break;
+        }
+        case KEY_LEFT:
+        {
+            if (col_num > 0)
             {
-                if (first_line)
-                {
-                    wprintw(win, "%3lu", line_num);
-                    first_line = false;
-                }
-                wprintw(win, " %.*s\n", COLS - 2 * DX - 6, &contents[begin]);
-                begin += COLS - 2 * DX - 6;
+                col_num--;
             }
-            if (first_line)
+            draw_screen(win, contents, line_num,
+                        line_num + LINES - 2 * DX - 2 < num_lines
+                            ? line_num + LINES - 2 * DX - 2
+                            : num_lines,
+                        col_num);
+            break;
+        }
+        case KEY_PPAGE:
+        {
+            if (line_num - (LINES - 2 * DX - 2) >= 0)
             {
-                wprintw(win, "%3lu", line_num);
-                first_line = false;
+                line_num -= (LINES - 2 * DX - 2);
             }
-            wprintw(win, " %.*s\n", end - begin, &contents[begin]);
-            ++line_num;
-
-            if (contents[end] != 0)
+            else
             {
-                begin = ++end;
+                line_num = 0;
             }
-            int y = getcury(win);
-            wmove(win, y, 1);
-            box(win, 0, 0);
-            wrefresh(win);
+            draw_screen(win, contents, line_num,
+                        line_num + LINES - 2 * DX - 2 < num_lines
+                            ? line_num + LINES - 2 * DX - 2
+                            : num_lines,
+                        col_num);
+            break;
+        }
+        case KEY_NPAGE:
+        {
+            if (line_num == -1)
+            {
+                line_num++;
+            }
+            if (line_num + LINES - 2 * DX - 2 < num_lines - 1)
+            {
+                line_num += (LINES - 2 * DX - 2);
+            }
+            else
+            {
+                line_num = num_lines - 1;
+            }
+            draw_screen(win, contents, line_num,
+                        line_num + LINES - 2 * DX - 2 < num_lines
+                            ? line_num + LINES - 2 * DX - 2
+                            : num_lines,
+                        col_num);
+            break;
+        }
+        default:
+        {
+            break;
+        }
         }
     }
 
+    for (int32_t i = 0; i < num_lines; ++i)
+    {
+        free(contents[i]);
+    }
+    free(contents);
     endwin();
     fclose(file);
     return 0;
