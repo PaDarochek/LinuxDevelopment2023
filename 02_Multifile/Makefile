@@ -26,25 +26,24 @@ prog-so: prog.o liboutput.so
 liboutput.so: $(LIB_SOURCES)
 	$(CC) -shared $(CFLAGS_SO) $^ -o $@
 
-# tests will fail because prog's Usage differs
 test: prog.out prog-a.out prog-so.out
 	cmp prog.out prog-a.out
 	cmp prog-so.out prog-a.out
 
 prog.out: prog
-	./$< > $@ 2>&1
-	./$< "abc" >> $@ 2>&1
-	./$< "abc" "def" "ghi" >> $@ 2>&1
+	bash -c "exec -a prog ./$< > $@ 2>&1"
+	bash -c "exec -a prog ./$< "abc" >> $@ 2>&1"
+	bash -c "exec -a prog ./$< "abc" "def" "ghi" >> $@ 2>&1"
 
 prog-a.out: prog-a
-	./$< > $@ 2>&1
-	./$< "abc" >> $@ 2>&1
-	./$< "abc" "def" "ghi" >> $@ 2>&1
+	bash -c "exec -a prog ./$< > $@ 2>&1"
+	bash -c "exec -a prog ./$< "abc" >> $@ 2>&1"
+	bash -c "exec -a prog ./$< "abc" "def" "ghi" >> $@ 2>&1"
 
 prog-so.out: prog-so
-	LD_LIBRARY_PATH=$(shell pwd):$$LD_LIBRARY_PATH ./$< > $@ 2>&1
-	LD_LIBRARY_PATH=$(shell pwd):$$LD_LIBRARY_PATH ./$< "abc" >> $@ 2>&1
-	LD_LIBRARY_PATH=$(shell pwd):$$LD_LIBRARY_PATH ./$< "abc" "def" "ghi" >> $@ 2>&1
+	LD_LIBRARY_PATH=$(shell pwd):$$LD_LIBRARY_PATH bash -c "exec -a prog ./$< > $@ 2>&1"
+	LD_LIBRARY_PATH=$(shell pwd):$$LD_LIBRARY_PATH bash -c "exec -a prog ./$< "abc" >> $@ 2>&1"
+	LD_LIBRARY_PATH=$(shell pwd):$$LD_LIBRARY_PATH bash -c "exec -a prog ./$< "abc" "def" "ghi" >> $@ 2>&1"
 
 clean:
 	rm -f $(TRASH) $(GENERATES)
