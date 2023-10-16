@@ -1,0 +1,15 @@
+start 1 12 1>/dev/null
+n 2
+b range_get if I.cur_value % 5 == 0
+    command 2
+        echo @@@
+        p I.start
+        echo @@@
+        p I.stop
+        echo @@@
+        p I.step
+        echo @@@
+        p I.cur_value
+        c
+    end
+c

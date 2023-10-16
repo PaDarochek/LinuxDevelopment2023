@@ -1,0 +1,19 @@
+start -100 100 3 1>/dev/null
+n 2
+set $i = 0
+b range_get
+    command 2
+        if $i >= 28 && $i <= 35
+            echo @@@
+            p I.start
+            echo @@@
+            p I.stop
+            echo @@@
+            p I.step
+            echo @@@
+            p I.cur_value
+        end
+        set $i = $i + 1
+        c
+    end
+c
