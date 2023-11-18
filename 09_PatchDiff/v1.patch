@@ -1,0 +1,34 @@
+--- maze_gen.c	2023-11-18 23:15:52.524676931 +0300
++++ maze_gen_v1.c	2023-11-18 23:15:15.167515873 +0300
+@@ -9,11 +9,8 @@
+     int j;
+ } Room;
+ 
+-enum
+-{
+-    SIZE = 13,
+-    DIM_ROOMS = 6
+-};
++static size_t SIZE;
++static size_t DIM_ROOMS;
+ 
+ void fill_unreachable(char **maze)
+ {
+@@ -209,8 +206,16 @@
+     free(maze);
+ }
+ 
+-int main()
++int main(int argc, char *argv[])
+ {
++    if (argc < 2)
++    {
++        printf("Set size of the maze (SIZE > 0)\n");
++        return 1;
++    }
++    DIM_ROOMS = atoi(argv[1]);
++    SIZE = DIM_ROOMS * 2 + 1;
++
+     srand(time(NULL));
+ 
+     char **maze = malloc(SIZE * sizeof(char *));

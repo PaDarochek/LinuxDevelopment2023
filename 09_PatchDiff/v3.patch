@@ -1,0 +1,35 @@
+--- maze_gen_v2.c	2023-11-18 23:53:35.939265249 +0300
++++ maze_gen_v3.c	2023-11-18 23:53:35.951265668 +0300
+@@ -211,23 +211,23 @@
+ 
+ int main(int argc, char *argv[])
+ {
+-    if (argc < 3)
++    if (argc < 4)
+     {
+-        printf("Set symbols to fill the maze (STRING from 2 chars) and size of the maze (SIZE > 0)\n");
++        printf("Set initial RNG value (SEED > 0), symbols to fill the maze (STRING from 2 chars) and size of the maze (SIZE > 0)\n");
+         return 1;
+     }
+-    if (strlen(argv[1]) != 2)
++    size_t init = atoi(argv[1]);
++    srand(init);
++    if (strlen(argv[2]) != 2)
+     {
+-        printf("Wrong 1st argument: set 2 symbols to fill the maze (STRING from 2 chars)\n");
++        printf("Wrong 2nd argument: set 2 symbols to fill the maze (STRING from 2 chars)\n");
+         return 1;
+     }
+-    wall = argv[1][1];
+-    path = argv[1][0];
+-    DIM_ROOMS = atoi(argv[2]);
++    wall = argv[2][1];
++    path = argv[2][0];
++    DIM_ROOMS = atoi(argv[3]);
+     SIZE = DIM_ROOMS * 2 + 1;
+ 
+-    srand(time(NULL));
+-
+     char **maze = malloc(SIZE * sizeof(char *));
+     for (size_t i = 0; i < SIZE; ++i)
+     {

@@ -1,0 +1,65 @@
+--- maze_gen_v1.c	2023-11-18 23:51:37.499965648 +0300
++++ maze_gen_v2.c	2023-11-18 23:52:15.880994288 +0300
+@@ -2,6 +2,7 @@
+ #include <stdlib.h>
+ #include <stdbool.h>
+ #include <time.h>
++#include <string.h>
+ 
+ typedef struct Room
+ {
+@@ -11,6 +12,8 @@
+ 
+ static size_t SIZE;
+ static size_t DIM_ROOMS;
++static char wall;
++static char path;
+ 
+ void fill_unreachable(char **maze)
+ {
+@@ -20,11 +23,11 @@
+         {
+             if (i % 2 && j % 2)
+             {
+-                maze[i][j] = '.';
++                maze[i][j] = path;
+             }
+             else
+             {
+-                maze[i][j] = '#';
++                maze[i][j] = wall;
+             }
+         }
+     }
+@@ -63,7 +66,7 @@
+     {
+         j = (first.j + second.j) / 2 * 2 + 2;
+     }
+-    maze[i][j] = '.';
++    maze[i][j] = path;
+ }
+ 
+ Room check_neighbors(Room cur_room, bool **visited)
+@@ -208,12 +211,19 @@
+ 
+ int main(int argc, char *argv[])
+ {
+-    if (argc < 2)
++    if (argc < 3)
+     {
+-        printf("Set size of the maze (SIZE > 0)\n");
++        printf("Set symbols to fill the maze (STRING from 2 chars) and size of the maze (SIZE > 0)\n");
+         return 1;
+     }
+-    DIM_ROOMS = atoi(argv[1]);
++    if (strlen(argv[1]) != 2)
++    {
++        printf("Wrong 1st argument: set 2 symbols to fill the maze (STRING from 2 chars)\n");
++        return 1;
++    }
++    wall = argv[1][1];
++    path = argv[1][0];
++    DIM_ROOMS = atoi(argv[2]);
+     SIZE = DIM_ROOMS * 2 + 1;
+ 
+     srand(time(NULL));
