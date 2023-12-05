@@ -1,0 +1,36 @@
+# Program that guesses the chosen number.
+# Copyright (C) 2023 Darya Parygina
+# This file is distributed under the same license as the guess package.
+# Parygina.Darya.2001@yandex.ru, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: guess 0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-12 01:35+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: guess.c:15
+#, c-format
+msgid "Choose number between 1 and 100\n"
+msgstr ""
+
+#: guess.c:21
+#, c-format
+msgid "Is your number greater that %lu? (yes/no)\n"
+msgstr ""
+
+#: guess.c:23
+msgid "yes"
+msgstr ""
+
+#: guess.c:27
+msgid "no"
+msgstr ""
